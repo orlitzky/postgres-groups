@@ -1,0 +1,124 @@
+== Overview ==
+
+We have a postgres server for a shared hosting environment, or an
+organization with semi-autonomous business units. For the rest of the
+discussion, we'll use the shared hosting scenario to simplify things.
+
+The primary security concern is that hosting customers should not be
+able to see or modify each other's data. This is non-negotiable.
+
+Of secondary importance is that each customer should be able to have
+one or more groups, consisting of its employees and (potentially) our
+employees who are able to modify everything in that customers
+databases. These databases will eventually be used for something, so
+let's additionally require that there will be a read-only user
+assigned to each database.
+
+Finally, our tertiary concern is that of convenience and
+maintainability. The addition of a new database or user should be
+accomplished in constant time. In other words, if there are 100
+databases and 100 users already, adding another of each should be just
+as fast as it was when there was 1 database and 1 user.
+
+
+== Groups ==
+
+We will use a few groups to illustrate the requirements.
+
+  * admins
+
+    These guys can modify anything on the server, but the objects
+    they create should not necessarily be shared to others.
+
+  * customer-a-devs
+
+    All employees of customer-A, as well as the server admins (the
+    DBAs). They should be able to access anything in customer-A's
+    databases.
+
+  * customer-b-devs
+
+    Same as customer-a-devs, only with customer-B's stuff.
+
+
+== Users ==
+
+The following users will be used to illustrate the examples.
+
+  * dba1 (admins, customer-a-devs, customer-b-devs)
+
+    The first system administrator. He can do whatever he wants on the
+    server, but if he creates an object in one of customerA or
+    customerB's databases, it should be visible to and writable by the
+    respective groups.
+
+  * dba2 (admins, customer-a-devs, customer-b-devs)
+
+    Same as dba1.
+
+  * anonymous
+
+    The website user that will be used to read (only) data from the
+    websites. In reality, this would be several different users, but
+    that would only unnecessarily complicate things.
+
+  * adam (customer-a-devs)
+
+    An employee of customer-A. Everything he creates in one of
+    customer-A's databases should be writable by alice and vice-versa.
+
+  * alice (customer-a-devs)
+
+    The other employee of customer-A. Same goes.
+
+  * bob (customer-b-devs)
+
+    An employee of customer-B. Everything he creates in one of
+    customer-B's databases should be writable by brittany and
+    vice-versa.
+
+  * brittany (customer-b-devs)
+
+    An employee of customer-B. Same goes.
+
+
+== Databases ==
+
+
+== Filesystem Examples ==
+
+=== Windows ===
+
+In Windows, to accomplish everything above, you only need to create
+those three groups. When you create a new directory for customerA, you,
+
+  1. Grant read/write permissions to the customerA group.
+  2. Grant read-only permissions to the anonymous user.
+  3. Replace all entries on child objects with the default (in case
+     the directory was non-empty).
+
+=== Unix ===
+
+With Linux, it's a little more work to meet the full requirements. The
+setgid strategy will fall apart if you have more than one group with
+different requirements. But we can use POSIX ACLs to achieve the same
+thing. When you create a new directory for customer-A,
+
+  1. Grant read/write permissions to the customer-a-devs group:
+
+     setfacl -m group:customer-a-devs:rwx <dir>
+
+  2. Grant read-only permissions to the anonymous user:
+
+     setfacl -m user:anonymous:rx <dir>
+
+  3. Set customer-a-devs defaults for newly-created files:
+
+     setfacl -d -m group:customer-a-devs:rwx <dir>
+
+  4. Set anonymous defaults for newly-created-files:
+
+     setfacl -d -m user:anonymous:rx <dir>
+
+If the directory is non-empty here, find/xargs can be used.
+
