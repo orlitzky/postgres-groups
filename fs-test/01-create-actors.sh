@@ -6,22 +6,18 @@
 
 groupadd admins
 groupadd customer-a-devs
-groupadd customer-b-devs
 
 useradd anonymous
-useradd -M -G admins,customer-a-devs,customer-b-devs dba1
+useradd -M -G admins,customer-devs dba1
 # dba2 omitted on purpose for now
-useradd -M -G customer-a-devs adam
-useradd -M -G customer-a-devs alice
-useradd -M -G customer-b-devs bob
-useradd -M -G customer-b-devs brittany
+useradd -M -G customer-devs adam
+useradd -M -G customer-devs bob
 
 #
 # Create the three directories that we will use.
 #
 
-mkdir customerA-project
-mkdir customerB-project
+mkdir customer-project
 mkdir dba-project
 
 # Disallow access to everything.

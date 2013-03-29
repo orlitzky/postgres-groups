@@ -20,6 +20,9 @@ accomplished in constant time. In other words, if there are 100
 databases and 100 users already, adding another of each should be just
 as fast as it was when there was 1 database and 1 user.
 
+I believe these constraints can be demonstrated with only two groups:
+the admins (us), and customer's developers. If I've made a mistake, it
+will have to be amended with an additional customer (and group).
 
 == Groups ==
 
@@ -30,56 +33,41 @@ We will use a few groups to illustrate the requirements.
     These guys can modify anything on the server, but the objects
     they create should not necessarily be shared to others.
 
-  * customer-a-devs
+  * customer-devs
 
-    All employees of customer-A, as well as the server admins (the
-    DBAs). They should be able to access anything in customer-A's
+    All employees of our customer, as well as the server admins (the
+    DBAs). They should be able to access anything in their own
     databases.
-
-  * customer-b-devs
-
-    Same as customer-a-devs, only with customer-B's stuff.
-
 
 == Users ==
 
 The following users will be used to illustrate the examples.
 
-  * dba1 (admins, customer-a-devs, customer-b-devs)
+  * dba1 (admins, customer-devs)
 
     The first system administrator. He can do whatever he wants on the
-    server, but if he creates an object in one of customerA or
-    customerB's databases, it should be visible to and writable by the
-    respective groups.
+    server, but if he creates an object in one of the customer's
+    databases, it should be visible to and writable by their group.
 
-  * dba2 (admins, customer-a-devs, customer-b-devs)
+  * dba2 (admins, customer-devs)
 
     Same as dba1.
 
   * anonymous
 
     The website user that will be used to read (only) data from the
-    websites. In reality, this would be several different users, but
-    that would only unnecessarily complicate things.
+    customer's databases. In reality, this would be several different
+    users, but that would only unnecessarily complicate things.
 
-  * adam (customer-a-devs)
+  * alice (customer-devs)
 
-    An employee of customer-A. Everything he creates in one of
-    customer-A's databases should be writable by alice and vice-versa.
+    An employee of our customer. Everything she creates in one of the
+    customer's databases should be writable by bob and vice-versa.
 
-  * alice (customer-a-devs)
+  * bob (customer-devs)
 
-    The other employee of customer-A. Same goes.
-
-  * bob (customer-b-devs)
-
-    An employee of customer-B. Everything he creates in one of
-    customer-B's databases should be writable by brittany and
-    vice-versa.
-
-  * brittany (customer-b-devs)
-
-    An employee of customer-B. Same goes.
+    Another customer employee. Everything he creates in one of their
+    databases should be writable by alice and vice-versa.
 
 
 == Databases ==
@@ -90,9 +78,10 @@ The following users will be used to illustrate the examples.
 === Windows ===
 
 In Windows, to accomplish everything above, you only need to create
-those three groups. When you create a new directory for customerA, you,
+those three groups. When you create a new directory for the customer,
+you,
 
-  1. Grant read/write permissions to the customerA group.
+  1. Grant read/write permissions to the customer-devs group.
   2. Grant read-only permissions to the anonymous user.
   3. Replace all entries on child objects with the default (in case
      the directory was non-empty).
@@ -102,23 +91,22 @@ those three groups. When you create a new directory for customerA, you,
 With Linux, it's a little more work to meet the full requirements. The
 setgid strategy will fall apart if you have more than one group with
 different requirements. But we can use POSIX ACLs to achieve the same
-thing. When you create a new directory for customer-A,
+thing. When you create a new directory for the customer,
 
-  1. Grant read/write permissions to the customer-a-devs group:
+  1. Grant read/write permissions to the customer-devs group:
 
-     setfacl -m group:customer-a-devs:rwx <dir>
+     setfacl -m group:customer-devs:rwx <dir>
 
   2. Grant read-only permissions to the anonymous user:
 
      setfacl -m user:anonymous:rx <dir>
 
-  3. Set customer-a-devs defaults for newly-created files:
+  3. Set customer-devs defaults for newly-created files:
 
-     setfacl -d -m group:customer-a-devs:rwx <dir>
+     setfacl -d -m group:customer-devs:rwx <dir>
 
   4. Set anonymous defaults for newly-created-files:
 
      setfacl -d -m user:anonymous:rx <dir>
 
 If the directory is non-empty here, find/xargs can be used.
-

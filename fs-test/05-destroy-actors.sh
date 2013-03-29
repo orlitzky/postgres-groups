@@ -10,18 +10,14 @@ exec 2>/dev/null
 userdel anonymous
 userdel dba1
 userdel dba2
-userdel adam
 userdel alice
 userdel bob
-userdel brittany
 
-groupdel admins | grep -v 'does not exist'
-groupdel customer-a-devs | grep -v 'does not exist'
-groupdel customer-b-devs | grep -v 'does not exist'
+groupdel admins
+groupdel customer-devs
 
 #
 # Remove the files/directories created during the test.
 #
-rm -rf customerA-project
-rm -rf customerB-project
+rm -rf customer-project
 rm -rf dba-project
