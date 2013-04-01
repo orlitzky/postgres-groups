@@ -1,20 +1,26 @@
 #!/bin/bash
 
+source ../die.sh
+
 #
 # Now we add another admin. He should be able to access everything
 # without having to go back and set permissions manually. Likewise,
 # other people should be able to modify his stuff.
 #
-useradd -G admins,customer-a-devs,customer-b-devs dba2
+useradd -G admins,customer-devs dba2
 
-# Adam creates a directory.
-su -c 'mkdir customerA-project/adams_dir' adam
+# dba2 is automatically allowed to modify alice's file.
+su -c 'touch customer-project/alice' dba2 \
+    || die "dba2 can't modify alice's file."
 
-# And dba2 is allowed to remove it.
-su -c 'rm -r customerA-project/adams_dir' adam
+# Now dba2 creates a file in the customer's project.
+su -c 'touch customer-project/dba2' dba2
 
-# Now dba2 creates a dir in customerA's project.
-su -c 'mkdir customerA-project/dba2_dir' dba2
+# And alice can modify it.
+su -c 'touch customer-project/dba2' alice \
+    || die "alice can't modify dba2's file."
 
-# And Alice can delete it.
-su -c 'rm -r customerA-project/dba2_dir' alice
+# dba2 should also be able to modify dba1's files
+su -c 'touch dba-project/dba1' dba1
+su -c 'touch dba-project/dba1' dba2 \
+    || die "dba2 can't modify dba1's file."

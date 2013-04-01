@@ -5,12 +5,12 @@
 #
 
 groupadd admins
-groupadd customer-a-devs
+groupadd customer-devs
 
 useradd anonymous
 useradd -M -G admins,customer-devs dba1
 # dba2 omitted on purpose for now
-useradd -M -G customer-devs adam
+useradd -M -G customer-devs alice
 useradd -M -G customer-devs bob
 
 #

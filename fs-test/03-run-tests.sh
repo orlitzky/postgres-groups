@@ -1,17 +1,29 @@
 #!/bin/bash
 
-# First test: admins and customer-a-devs can create things in
-# customerA-project.
+source ../die.sh
 
-su -c 'mkdir customerA-project/adams_dir' adam
-su -c 'mkdir customerA-project/alices_dir' alice
-su -c 'mkdir customerA-project/dba1s_dir' dba1
+# The admins and customer-devs can create files in customer-project.
 
-# Each user can delete one of the dirs just created by someone else.
-su -c 'rm -r customerA-project/dba1s_dir' adam
-su -c 'rm -r customerA-project/alices_dir' dba1
-su -c 'rm -r customerA-project/adams_dir' alice
+su -c 'touch customer-project/alice' alice
+su -c 'touch customer-project/bob' bob
+su -c 'touch customer-project/dba1' dba1
 
-# The anonymous user can read adam's files.
-su -c 'touch customerA-project/foo' adam
-su -c 'cat customerA-project/foo' anonymous
+# Each user can modify one of the files just created by someone else.
+su -c 'touch customer-project/dba1' bob \
+    || die "bob can't modify dba1's file."
+
+su -c 'touch customer-project/alice' dba1 \
+    || die "dba1 can't modify alice's file."
+
+su -c 'touch customer-project/bob' alice \
+    || die "alice can't modify bob's file."
+
+# The anonymous user can read bob's files.
+su -c 'cat customer-project/bob' anonymous \
+    || die "The anonymous user can't read bob's files."
+
+
+# The admins' databases are accessible only to themselves.
+su -c 'touch dba-project/dba1' dba1
+su -c 'touch dba-project/dba1 2>/dev/null' alice \
+    && die "alice can modify admin files."
