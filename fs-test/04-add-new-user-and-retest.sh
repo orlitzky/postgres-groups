@@ -20,7 +20,10 @@ su -c 'touch customer-project/dba2' dba2
 su -c 'touch customer-project/dba2' alice \
     || die "alice can't modify dba2's file."
 
+# The anonymous user can read dba2's file.
+su -c 'cat customer-project/dba2' anonymous \
+    || die "anonymous can't read dba2's file."
+
 # dba2 should also be able to modify dba1's files
-su -c 'touch dba-project/dba1' dba1
 su -c 'touch dba-project/dba1' dba2 \
     || die "dba2 can't modify dba1's file."
