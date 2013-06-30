@@ -69,10 +69,6 @@ The following users will be used to illustrate the examples.
     Another customer employee. Everything he creates in one of their
     databases should be writable by alice and vice-versa.
 
-
-== Databases ==
-
-
 == Filesystem Examples ==
 
 === Windows ===
@@ -110,3 +106,31 @@ thing. When you create a new directory for the customer,
      setfacl -d -m user:anonymous:rx <dir>
 
 If the directory is non-empty here, find/xargs can be used.
+
+== Database Examples ==
+
+=== Microsoft SQL Server ===
+
+This sort of arrangement can be achieved easily in MSSQL, although
+there are three different ways to do it.
+
+If you're using Active Directory authentication, you can simply grant
+the permissions to an Active Directory group. So if you have AD groups
+"admins" and "customer-devs", you can right click on a database and
+grant those groups permission to whatever you want.
+
+If you're using SQL logins, in MSSQL 2012 and later you can create new
+roles at the server level. Then it's no more difficult than with AD
+logins: right click on the database, hit properties, and grant
+permissions to the (server-level) role.
+
+=== Postgres ===
+
+Postgres has no (obvious?) way to achieve this. The closest I was able
+to come can be found in the pg-tests/02-create-permissions.sh file. It
+is not pretty; and doesn't fully work besides. When a new user is
+created in 04-add-new-user-and-retest.sh, some manual work is required
+to grant him the correct permissions.
+
+If there are 100 databases on the server already, that could be a lot
+of error-prone work.
