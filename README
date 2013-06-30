@@ -24,6 +24,16 @@ I believe these constraints can be demonstrated with only two groups:
 the admins (us), and customer's developers. If I've made a mistake, it
 will have to be amended with an additional customer (and group).
 
+== Running the Tests ==
+
+These two tests will create system and postgres users on your
+machine. They are designed to run as root, with local trust
+authentication to a Postgres instance on localhost.
+
+They should clean up after themselves, and I don't think they'll
+damage anything, but you'd be nuts to run the scripts without reading
+what they do first.
+
 == Groups ==
 
 We will use a few groups to illustrate the requirements.
