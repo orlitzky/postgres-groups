@@ -1,4 +1,4 @@
-== Overview ==
+# Overview
 
 We have a postgres server for a shared hosting environment, or an
 organization with semi-autonomous business units. For the rest of the
@@ -24,7 +24,7 @@ I believe these constraints can be demonstrated with only two groups:
 the admins (us), and customer's developers. If I've made a mistake, it
 will have to be amended with an additional customer (and group).
 
-== Running the Tests ==
+# Running the Tests
 
 These two tests will create system and postgres users on your
 machine. They are designed to run as root, with local trust
@@ -34,7 +34,31 @@ They should clean up after themselves, and I don't think they'll
 damage anything, but you'd be nuts to run the scripts without reading
 what they do first.
 
-== Groups ==
+To run the tests, simply 'cd' into the directory, and run the scripts
+in order. On my machine, this is how the filesystem tests (POSIX ACL
+support required) are run:
+
+```Bash
+sudo ./01-create-actors.sh
+sudo ./02-create-acls.sh
+sudo ./03-run-tests.sh
+sudo ./04-add-new-user-and-retest.sh
+sudo ./05-destroy-actors.sh
+```
+
+There's no output, which means that the test succeeded. The postgres
+test, on the other hand, fails at step #4:
+
+```Bash
+sudo ./01-create-actors.sh
+sudo ./02-create-permissions.sh
+sudo ./03-run-tests.sh
+sudo ./04-add-new-user-and-retest.sh
+ERROR: alice can't modify dba2's table.
+sudo ./05-destroy-actors.sh
+```
+
+# Groups
 
 We will use a few groups to illustrate the requirements.
 
@@ -49,7 +73,7 @@ We will use a few groups to illustrate the requirements.
     DBAs). They should be able to access anything in their own
     databases.
 
-== Users ==
+# Users
 
 The following users will be used to illustrate the examples.
 
@@ -79,9 +103,9 @@ The following users will be used to illustrate the examples.
     Another customer employee. Everything he creates in one of their
     databases should be writable by alice and vice-versa.
 
-== Filesystem Examples ==
+# Filesystem Examples
 
-=== Windows ===
+## Windows
 
 In Windows, to accomplish everything above, you only need to create
 those three groups. When you create a new directory for the customer,
@@ -92,7 +116,7 @@ you,
   3. Replace all entries on child objects with the default (in case
      the directory was non-empty).
 
-=== Unix ===
+## Unix
 
 With Linux, it's a little more work to meet the full requirements. The
 setgid strategy will fall apart if you have more than one group with
@@ -117,9 +141,9 @@ thing. When you create a new directory for the customer,
 
 If the directory is non-empty here, find/xargs can be used.
 
-== Database Examples ==
+# Database Examples
 
-=== Microsoft SQL Server ===
+## Microsoft SQL Server
 
 This sort of arrangement can be achieved easily in MSSQL, although
 there are three different ways to do it.
@@ -134,7 +158,7 @@ roles at the server level. Then it's no more difficult than with AD
 logins: right click on the database, hit properties, and grant
 permissions to the (server-level) role.
 
-=== Postgres ===
+## Postgres
 
 Postgres has no (obvious?) way to achieve this. The closest I was able
 to come can be found in the pg-tests/02-create-permissions.sh file. It
