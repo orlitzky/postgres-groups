@@ -24,6 +24,12 @@ I believe these constraints can be demonstrated with only two groups:
 the admins (us), and customer's developers. If I've made a mistake, it
 will have to be amended with an additional customer (and group).
 
+# The Goal
+
+We should be able to run the scripts in pg-test and have them work,
+considering the previous few paragraphs. Can you modify
+pg-test/02-create-permissions so that the rest of the tests pass?
+
 # Running the Tests
 
 These two tests will create system and postgres users on your
@@ -38,7 +44,7 @@ To run the tests, simply 'cd' into the directory, and run the scripts
 in order. On my machine, this is how the filesystem tests (POSIX ACL
 support required) are run:
 
-```Bash
+```
 sudo ./01-create-actors.sh
 sudo ./02-create-acls.sh
 sudo ./03-run-tests.sh
@@ -49,7 +55,7 @@ sudo ./05-destroy-actors.sh
 There's no output, which means that the test succeeded. The postgres
 test, on the other hand, fails at step #4:
 
-```Bash
+```
 sudo ./01-create-actors.sh
 sudo ./02-create-permissions.sh
 sudo ./03-run-tests.sh
@@ -125,21 +131,22 @@ thing. When you create a new directory for the customer,
 
   1. Grant read/write permissions to the customer-devs group:
 
-     setfacl -m group:customer-devs:rwx <dir>
+     `setfacl -m group:customer-devs:rwx <dir>`
 
   2. Grant read-only permissions to the anonymous user:
 
-     setfacl -m user:anonymous:rx <dir>
+     `setfacl -m user:anonymous:rx <dir>`
 
   3. Set customer-devs defaults for newly-created files:
 
-     setfacl -d -m group:customer-devs:rwx <dir>
+     `setfacl -d -m group:customer-devs:rwx <dir>`
 
   4. Set anonymous defaults for newly-created-files:
 
-     setfacl -d -m user:anonymous:rx <dir>
+     `setfacl -d -m user:anonymous:rx <dir>`
 
-If the directory is non-empty here, find/xargs can be used.
+If the directory is non-empty here, find/xargs can be used. This is
+what the filesystem test does, and it works.
 
 # Database Examples
 
@@ -161,10 +168,13 @@ permissions to the (server-level) role.
 ## Postgres
 
 Postgres has no (obvious?) way to achieve this. The closest I was able
-to come can be found in the pg-tests/02-create-permissions.sh file. It
+to come can be found in the pg-test/02-create-permissions.sh file. It
 is not pretty; and doesn't fully work besides. When a new user is
 created in 04-add-new-user-and-retest.sh, some manual work is required
 to grant him the correct permissions.
 
 If there are 100 databases on the server already, that could be a lot
 of error-prone work.
+
+Is there a way to modify 02-create-permissions.sh so that
+04-add-new-user-and-retest.sh will work?
